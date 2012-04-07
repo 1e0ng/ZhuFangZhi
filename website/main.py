@@ -20,16 +20,15 @@ class MainHandler(tornado.web.RequestHandler):
         self.render("home.html")
 
 class SearchHandler(tornado.web.RequestHandler):
-    def get(self, query_string):
-        self.write("You queried: " + query_string)
-
-
+    def get(self):
+        self.write("Your query is " + self.get_argument("query"))
+        
 def main():
     tornado.options.parse_command_line()
     logging.info("Starting Tornado web server on http://localhost:%s" % options.port)
     application = tornado.web.Application([
         (r"/", MainHandler),
-	(r"/search/(.*)", SearchHandler),
+        (r"/search", SearchHandler),
     ], **settings)
     application.listen(options.port, **server_settings)
     tornado.ioloop.IOLoop.instance().start()
