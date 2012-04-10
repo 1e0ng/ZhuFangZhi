@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+        <meta name="author" content="Liang Sun : i@liangsun.org">
+        <meta name="keywords" content="猪房纸,房屋租赁搜索引擎,租房子">
+        <meta name="description" content="猪房纸,房屋租赁搜索引擎">
+        <link rel="stylesheet" type="text/css" href="static/b.css">
+        <title>猪房纸 - 房屋租赁搜索引擎</title>
+    </head>
+    <body>
+        <div id="top">
+        </div>
+        <div id="main">
+            <div id="bar">
+                <div id="logo">
+                    <img src="static/icon.png" />
+                </div>
+                <form action="search" method="get">
+                    <input type="text" name="query" value="{{ escape(query) }}" id="query" />
+                    <input value="搜索" type="submit" id="ok" />
+                </form>
+            </div>
+
+            <div id="result">
+                <ul id="items">
+                    {% for item in items %}
+                    <li>
+                    <div class="title">
+                        <a href="#">{{ escape(item['title']) }}</a>
+                    </div>
+                    <div class="url">
+                        {{ escape(item['url']) }}
+                    </div>
+                    <div class="detail1">
+                        <span class="price">价格:{{ escape(item['price']) }}</span>
+                        <span class="area">面积:{{ escape(item['area']) }}</span>
+                        <span class="style">房型:{{ escape(item['style']) }}</span>
+                    </div>
+                    <div class="detail2">
+                        <span class="address">地址：{{ escape(item['address']) }}</span>
+                        <span class="district">小区：{{ escape(item['district']) }}</span>
+                    </div>
+                    </li>
+                    {% end %}
+                </ul>
+            </div>
+        </div>
+        <div id="bottom">
+        </div>
+    </body>
+</html>
