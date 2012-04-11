@@ -5,35 +5,48 @@
 
 
 import re
+import urllib
 import robotexclusionrulesparser
 
-root = 'http://beijing.anjuke.com'
-rerp = robotexclusionrulesparser.RobotExclusionRulesParser()
+class ZfzURLopener(urllib.FancyURLopener):
+    version = "Zfz-bot/1.0"
 
-# I'll set the (optional) user_agent before calling fetch.
-rerp.user_agent = "ZhuFangZhi-bot/1.0"
+urllib._urlopener = ZfzURLopener()
 
-# Note that there should be a try/except here to handle urllib2.URLError,
-# socket.timeout, UnicodeError, etc.
-try:
-    rerp.fetch(root + "/robots.txt")
-except:
-    return True
+def explore(url):
 
-#for user_agent, url in user_agents_and_urls:
-#    print "Can %s fetch '%s'? %s" % \
-#          (user_agent, url, rerp.is_allowed(user_agent, url))
 
-#rp = robotparser.RobotFileParser()
-#rp.set_url(root + '/robots.txt')
-#rp.read()
-print rerp.is_allowed('*', root + '/rental/')
-print rerp.is_allowed('*', root + '/include/')
-print rerp.is_allowed('*', root + '/tycoonsearch.php')
 
-#rp = robotparser.RobotFileParser()
-#rp.set_url("http://www.musi-cal.com/robots.txt")
-#rp.read()
-#print rp.can_fetch("*", "http://www.musi-cal.com/cgi-bin/search?city=San+Francisco")
-#print rp.can_fetch("*", "http://www.musi-cal.com/")
+def insite_search(root):
+    rerp = robotexclusionrulesparser.RobotExclusionRulesParser()
+    rerp.user_agent = "Zfz-bot/1.0"
+    try:
+        rerp.fetch(root + "/robots.txt")
+    except:
+        pass
+
+    open = [root]
+    close = set()
+
+    while len(open) > 0:
+        url = open.pop()
+        if not rerp.is_allowed('*', url):
+            continue
+
+        close.add(url)
+        page = explore(url)
+
+
+    #rerp.is_allowed('*', url)
+
+
+
+seeds = ['http://beijing.anjuke.com',
+        'http://zufang.sina.com.cn',
+        'http://bj.ganji.com',
+        'http://bj.58.com/zufang/',
+        'http://haozu.com']
+
+#root = 'http://zhufangzhi.com'
+
 
