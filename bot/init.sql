@@ -24,6 +24,7 @@ DROP TABLE IF EXISTS `pages`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `pages` (
   `url` varchar(200) NOT NULL DEFAULT '',
+  
   `price` int(10) DEFAULT NULL,
   `address` varchar(100) DEFAULT NULL,
   `area` int(10) DEFAULT NULL,
