@@ -9,12 +9,12 @@ import robotexclusionrulesparser
 g_user_agent = 'Zfz-bot/1.0'
 
 g_link_pattern = re.compile(r'<a\s+[^>]*href=[\'"]?([^\s\'">]+)[\'"]?', re.U | re.I)
-g_price_pattern = re.compile(u'租金：[^\d]*(\d+)[^元]*元/月', re.U | re.I)
-g_address_pattern = re.compile(u'地址：<[^>]+>([^<]+)<', re.U | re.I)
-g_area_pattern = re.compile(u'面积：(\d+)平米', re.U | re.I)
-g_arch_pattern = re.compile(u'房型：([^\s<]+)<', re.U | re.I)
-g_title_pattern = re.compile(u'<title>([^<]+)</title>', re.U | re.I)
-g_district_pattern = re.compile(u'小区：<[^>]+>([^<]+)<', re.U | re.I)
+g_price_pattern = re.compile(ur'租金：<em>(\d+)</em><span>元/月', re.U | re.I)
+g_address_pattern = re.compile(ur'地址：<[^>]+>([^<]+)<', re.U | re.I)
+g_area_pattern = re.compile(ur'面积：(\d+)平米', re.U | re.I)
+g_arch_pattern = re.compile(ur'房型：([^\s<]+)<', re.U | re.I)
+g_title_pattern = re.compile(ur'<title>([^<]+)</title>', re.U | re.I)
+g_district_pattern = re.compile(ur'小区：<[^>]+>([^<]+)<', re.U | re.I)
 
 g_max_url_length = 200
 g_max_price_length = 10
@@ -24,20 +24,19 @@ g_max_arch_length = 20
 g_max_title_length = 100
 g_max_district_length = 20
 
-g_page_limit = 10
+g_page_limit = 3
 
 class ZfzURLopener(urllib.FancyURLopener):
     version = g_user_agent
 
 urllib._urlopener = ZfzURLopener()
 
-
 def get_page(url):
     global g_page_limit
     g_page_limit -= 1
     if g_page_limit <= 0:
         sys.exit(0)
-        
+      
     print 'get page:' + url
     
     if not url.startswith('http://'):
@@ -60,11 +59,42 @@ def add_result_to_db(url, result):
 
 def analyse(page):
     m = g_price_pattern.search(page)
-    if m is None:
+    if m == None:
+        print 'No price'
         return None
     price = m.group(1)
     
-    return [price]
+    m = g_address_pattern.search(page)
+    if m == None:
+        print 'No address'
+        return None
+    address = m.group(1)
+
+    m = g_area_pattern.search(page)
+    if m == None:
+        print 'No area'
+        return None
+    area = m.group(1)
+
+    m = g_arch_pattern.search(page)
+    if m == None:
+        print 'No arch'
+        return None
+    arch = m.group(1)
+
+    m = g_title_pattern.search(page)
+    if m == None:
+        print 'No title'
+        return None
+    title = m.group(1)
+
+    m = g_district_pattern.search(page)
+    if m == None:
+        print 'No district'
+        return None
+    district = m.group(1)
+
+    return [title, price, area, arch, address, district]
 
 def add_page_to_index(url, page):
     print 'Adding %s to index.' % url
@@ -131,6 +161,7 @@ def crawl_web(root):
 #        'http://bj.58.com/zufang/',
 #        'http://haozu.com']
 #
-seeds = ['http://beijing.anjuke.com']
+#seeds = ['http://beijing.anjuke.com']
+seeds = ['http://beijing.anjuke.com/prop/rent/107862213']
 for seed in seeds:
     crawl_web(seed)

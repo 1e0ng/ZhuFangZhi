@@ -38,6 +38,7 @@ def main():
     application = tornado.web.Application([
         (r"/", MainHandler),
         (r"/search", SearchHandler),
+        (r".*", MainHandler),
     ], **settings)
     application.listen(options.port, **server_settings)
     tornado.ioloop.IOLoop.instance().start()
