@@ -11,14 +11,21 @@ from tornado.database import Connection
 g_user_agent = 'zfz-bot/1.0'
 
 g_link_pattern = re.compile(r'\s+href="([^\s\'">]+)"[\s>]', re.U | re.I)
-#href="http://beijing.anjuke.com/prop/rent/107883327"
-g_price_pattern = re.compile(ur'租金：[^\d]*(\d+)(<[^<>]+>)*元/月', re.U | re.I)
-g_area_pattern = re.compile(ur'面积：(\d+)平米', re.U | re.I)
-g_arch_pattern = re.compile(ur'房型：([^\s<]+)<', re.U | re.I)
-g_title_pattern = re.compile(ur'<title>([^<]+)</title>', re.U | re.I)
-g_address_pattern = re.compile(ur'地址：<[^>]+>([^<]+)<', re.U | re.I)
-g_district_pattern = re.compile(ur'小区：<[^>]+>([^<]+)<', re.U | re.I)
+g_charset_pattern = re.compile(r'<meta\s+([^\s]+="[^"]"\s+)*content="[^"]*charset=([^"]+)[\s"]', re.I)
+#<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
 
+g_price_pattern = re.compile(ur'租\s*金[^：]*：[^\d]*(\d+)(<[^<>]+>)*元/月', re.U | re.I)
+#租 金</span>：<span class="hs rd">1100</span>元/月
+g_area_pattern = re.compile(ur'面积：[^\d]*(\d+)平米', re.U | re.I)
+#出租面积：<span class="hs"><strong>15平米
+g_arch_pattern = re.compile(ur'[房户]\s*型[^：]*：[^\d]*(\d[^\s<]+)<', re.U | re.I)
+#户 型</span>：<span class="hs"><strong>3室1厅1卫
+g_title_pattern = re.compile(ur'<title>([^<]+)</title>', re.U | re.I)
+
+g_address_pattern = re.compile(ur'地址：<[^>]+>([^<]+)<', re.U | re.I)
+#地址：</span>北京丰台区西南三环丰益桥西300米</li>
+g_district_pattern = re.compile(ur'小区：(<[^>]+>)*([^<]+)<', re.U | re.I)
+#小区：</span><a href="http://bj.esf.sina.com.cn/info/9212" target="_blank" ><strong>丰益花园西区
 g_max_url_length = 200
 
 g_max_price_length = 10
@@ -28,7 +35,7 @@ g_max_title_length = 100
 g_max_address_length = 100
 g_max_district_length = 20
 
-g_page_limit = 10 ** 6
+g_page_limit = 3
 
 g_db = Connection('127.0.0.1', 'zfz', 'zfz', 'zfz...891')
 
@@ -38,8 +45,11 @@ class ZfzURLopener(urllib.FancyURLopener):
 urllib._urlopener = ZfzURLopener()
 
 def is_valid_url(url):
+    if not url.startswith('http'):
+        return True
     #print url
-    ans = re.match(ur'http://beijing.anjuke.com/prop/rent/\d+', url) != None
+    ans = re.match(ur'http://bj.zufang.sina.com.cn/detail/\d+', url) != None
+    #http://bj.zufang.sina.com.cn/detail/33539169
     #print ans
     return ans
 
@@ -56,14 +66,17 @@ def get_page(url):
         return None
 
     try:
-        ans = urllib.urlopen(url).read().decode('utf-8')
+        ans = urllib.urlopen(url).read()
+        charset = 'gbk'
+        m = g_charset_pattern.search(ans)
+        if m != None:
+            charset = m.group(2)
+
+        print charset
+        ans = ans.decode(charset)
     except:
         return None
 
-#    f = codecs.open('tmp', 'w', 'utf-8')
-#    f.write(ans)
-#    f.close()
-# 
     return ans
 
 def get_all_links(page):
@@ -115,10 +128,10 @@ def analyse(page):
     title = m.group(1)
 
     m = g_district_pattern.search(page)
-    if m == None or len(m.group(1)) > g_max_district_length:
+    if m == None or len(m.group(2)) > g_max_district_length:
         print 'No district'
         return None
-    district = m.group(1)
+    district = m.group(2)
 
     return [title, price, area, arch, address, district]
 
@@ -163,7 +176,7 @@ def crawl_web(root):
 
             #Deal with absolute path and relative path
             if link.startswith('/'):
-                full_link = root + link
+                full_link = root[:root.find('/', 7)] + link
             elif link.startswith('http'):
                 full_link = link
             elif url.rfind('/') != -1:
@@ -190,7 +203,8 @@ def crawl_web(root):
 #        'http://haozu.com']
 #
 #seeds = ['http://beijing.anjuke.com']
-seeds = ['http://beijing.anjuke.com/rental/']
+#seeds = ['http://beijing.anjuke.com/rental/']
+seeds = ['http://bj.zufang.sina.com.cn/house/a100/']
 for seed in seeds:
     crawl_web(seed)
 
