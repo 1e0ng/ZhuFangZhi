@@ -15,17 +15,18 @@ g_link_pattern = re.compile(r'\s+href="([^\s\'">]+)"[\s>]', re.U | re.I)
 g_charset_pattern = re.compile(r'<meta\s+([^\s]+="[^"]"\s+)*content="[^"]*charset=([^"]+)[\s"]', re.I)
 #<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
 
-g_price_pattern = re.compile(ur'租\s*金[^：:]*[：:][^\d]*(\d+)(<[^<>]+>)*\s*元/月', re.U | re.I)
-#租金: <span>3200</span> 元/月
-g_area_pattern = re.compile(ur'(面积[：:][^\d]*|室\s*|卫\s*|厅\s*)(\d+)\s*(平米|㎡)', re.U | re.I)
+g_price_pattern = re.compile(ur'租\s*金[^：:]*[：:]\s*(<[^<>]+>\s*)*(\d+)\s*(<[^<>]+>\s*)*元/月', re.U | re.I)
+#租 金：<span class="red20b">6000</span><span class="black">元/月
+g_area_pattern = re.compile(ur'(面积[：:]\s*(<[^<>]+>\s*)*|室\s*|卫\s*|厅\s*)([\d\.]+)\s*(平米|㎡|平方米)', re.U | re.I)
 #出租面积：<span class="hs"><strong>15平米
-g_arch_pattern = re.compile(ur'[房户]\s*型[^：:]*[：:][^\d]*(\d[^<\s]+)[<\s]', re.U | re.I)
+#g_arch_pattern = re.compile(ur'[房户]\s*型[^：:]*[：:]\s*(<[^<>]+>\s*)*([^<>]+[^\s])[\s<]', re.U | re.I)
+g_arch_pattern = re.compile(ur'[房户]\s*型[^：:]*[：:][^\d]*(\d[^<>\s]+)[\s<]', re.U | re.I)
 #户 型</span>：<span class="hs"><strong>3室1厅1卫
-g_title_pattern = re.compile(ur'<title>([^<]+)</title>', re.U | re.I)
+g_title_pattern = re.compile(ur'<title>\s*([^<]+[^\s])\s*</title>', re.U | re.I)
 
 g_address_pattern = re.compile(ur'地\s*址[：:]\s*(<[^<>]+>\s*)*([^<>\s]+)[<\s]', re.U | re.I)
 #地址：</span>北京丰台区西南三环丰益桥西300米</li>
-g_district_pattern = re.compile(ur'小\s*区[：:]\s*(<[^<>]+>\s*)*([^<>\s]+)[<\s]', re.U | re.I)
+g_district_pattern = re.compile(ur'(小\s*区|楼盘名称)[：:]\s*(<[^<>]+>\s*)*([^<>\s]+)[<\s]', re.U | re.I)
 #小区：</span><a href="http://bj.esf.sina.com.cn/info/9212" target="_blank" ><strong>丰益花园西区
 g_max_url_length = 200
 
@@ -49,8 +50,9 @@ def is_valid_url(url):
     if url.find('#') != -1 or url.find('javascript:') != -1:
         return False
     else:
+        #ans = re.match(ur'http://bj.zufang.sina.com.cn/detail/\d+/?', url) != None
+        #ans = re.match(ur'http://bj.58.com/zufang/.*', url) != None
         ans = re.match(ur'http://bj.ganji.com/fang1/\d+x.htm', url) != None or re.match(ur'http://bj.ganji.com/fang1/f\d+/?', url) != None
-    #print ans
     return ans
 
 def get_page(url):
@@ -68,11 +70,6 @@ def get_page(url):
     try:
         ans = urllib.urlopen(url).read()
         charset = 'utf-8'
-        m = g_charset_pattern.search(ans)
-        if m != None:
-            charset = m.group(2)
-
-        print charset
         ans = ans.decode(charset)
     except:
         return None
@@ -100,22 +97,16 @@ def add_result_to_db(url, result):
 
 def analyse(page):
     m = g_price_pattern.search(page)
-    if m == None or len(m.group(1)) > g_max_price_length:
+    if m == None or len(m.group(2)) > g_max_price_length:
         print 'No price'
         return None
-    price = m.group(1)
+    price = m.group(2)
     
-    m = g_address_pattern.search(page)
-    if m == None or len(m.group(2)) > g_max_address_length:
-        print 'No address'
-        return None
-    address = m.group(2)
-
     m = g_area_pattern.search(page)
-    if m == None or len(m.group(2)) > g_max_area_length:
+    if m == None or len(m.group(3)) > g_max_area_length:
         print 'No area'
         return None
-    area = m.group(2)
+    area = m.group(3)
 
     m = g_arch_pattern.search(page)
     if m == None or len(m.group(1)) > g_max_arch_length:
@@ -130,10 +121,17 @@ def analyse(page):
     title = m.group(1)
 
     m = g_district_pattern.search(page)
-    if m == None or len(m.group(2)) > g_max_district_length:
+    if m == None or len(m.group(3)) > g_max_district_length:
         print 'No district'
         return None
-    district = m.group(2)
+    district = m.group(3)
+
+    m = g_address_pattern.search(page)
+    if m == None or len(m.group(2)) > g_max_address_length:
+        address = district
+    else:
+        address = m.group(2)
+
 
     return [title, price, area, arch, address, district]
 
@@ -208,6 +206,8 @@ def crawl_web(root):
 #seeds = ['http://beijing.anjuke.com/rental/']
 
 #seeds = ['http://bj.58.com/zufang/']
+#seeds = ['http://beijing.haozu.com/listing/p1/']
+#seeds = ['http://zu.soufun.com/house/i33/']
 seeds = ['http://bj.ganji.com/fang1/f0/']
 
 #seeds = ['http://bj.ganji.com/fang1/']
