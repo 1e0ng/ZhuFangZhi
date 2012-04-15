@@ -28,7 +28,7 @@ class SearchHandler(tornado.web.RequestHandler):
         q = q.lstrip().rstrip().replace("'", "").replace('"', '').replace('#', '').replace('%', '')
         if len(q) > 0:
             q = '%' + q + '%'
-            items = db.query("select title, url, price, area, arch, address, district from pages where address like %s or district like %s limit 20", q, q)
+            items = db.query("select title, url, price, area, arch, address, district from pages where address like %s or district like %s order by date desc limit 20", q, q)
         else:
             items = []
 

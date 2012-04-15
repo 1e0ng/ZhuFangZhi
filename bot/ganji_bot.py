@@ -5,6 +5,7 @@ import re
 import sys
 import codecs
 import urllib
+import datetime, time
 import robotexclusionrulesparser
 from tornado.database import Connection
 
@@ -16,15 +17,15 @@ g_charset_pattern = re.compile(r'<meta\s+([^\s]+="[^"]"\s+)*content="[^"]*charse
 
 g_price_pattern = re.compile(ur'租\s*金[^：:]*[：:][^\d]*(\d+)(<[^<>]+>)*\s*元/月', re.U | re.I)
 #租金: <span>3200</span> 元/月
-g_area_pattern = re.compile(ur'面积[：:][^\d]*(\d+)\s*(平米|㎡)', re.U | re.I)
+g_area_pattern = re.compile(ur'(面积[：:][^\d]*|室\s*|卫\s*|厅\s*)(\d+)\s*(平米|㎡)', re.U | re.I)
 #出租面积：<span class="hs"><strong>15平米
-g_arch_pattern = re.compile(ur'[房户]\s*型[^：:]*[：:][^\d]*(\d[^\s<]+)[\s<]', re.U | re.I)
+g_arch_pattern = re.compile(ur'[房户]\s*型[^：:]*[：:][^\d]*(\d[^<\s]+)[<\s]', re.U | re.I)
 #户 型</span>：<span class="hs"><strong>3室1厅1卫
 g_title_pattern = re.compile(ur'<title>([^<]+)</title>', re.U | re.I)
 
-g_address_pattern = re.compile(ur'地址[：:](<[^<>]+>\s*)*([^<>\s]+)[<\s]', re.U | re.I)
+g_address_pattern = re.compile(ur'地\s*址[：:]\s*(<[^<>]+>\s*)*([^<>\s]+)[<\s]', re.U | re.I)
 #地址：</span>北京丰台区西南三环丰益桥西300米</li>
-g_district_pattern = re.compile(ur'小区[：:]\s*(<[^<>]+>\s*)*([^<\s]+)[<\s]', re.U | re.I)
+g_district_pattern = re.compile(ur'小\s*区[：:]\s*(<[^<>]+>\s*)*([^<>\s]+)[<\s]', re.U | re.I)
 #小区：</span><a href="http://bj.esf.sina.com.cn/info/9212" target="_blank" ><strong>丰益花园西区
 g_max_url_length = 200
 
@@ -48,9 +49,7 @@ def is_valid_url(url):
     if url.find('#') != -1 or url.find('javascript:') != -1:
         return False
     else:
-        #ans = re.match(ur'http://bj.zufang.sina.com.cn/detail/\d+/?', url) != None
         ans = re.match(ur'http://bj.ganji.com/fang1/\d+x.htm', url) != None or re.match(ur'http://bj.ganji.com/fang1/f\d+/?', url) != None
-
     #print ans
     return ans
 
@@ -59,7 +58,7 @@ def get_page(url):
 #    g_page_limit -= 1
 #    if g_page_limit <= 0:
 #        sys.exit(0)
-#      
+      
     print 'get page:' + url
 
    
@@ -85,6 +84,7 @@ def get_all_links(page):
 
 def add_result_to_db(url, result):
     print '++++++Adding %s to db.' % url
+    ts = int(time.mktime(datetime.datetime.now().timetuple()))
     #price, address, area, arch, title, district = result
     for i in range(len(result)):
         result[i] = result[i].encode('utf-8')
@@ -92,11 +92,11 @@ def add_result_to_db(url, result):
 
     title, price, area, arch, address, district = result
 
-    g_db.execute("insert into pages (url, price, address, area, arch, title, district) "
-                 "values (%s, %s, %s, %s, %s, %s, %s) on duplicate key update "
-                 "price=%s, address=%s, area=%s, arch=%s, title=%s, district=%s",
-                 url, int(price), address, int(float(area) * 100), arch, title, district,
-                 int(price), address, int(float(area) * 100), arch, title, district)
+    g_db.execute("insert into pages (url, price, address, area, arch, title, district, date) "
+                 "values (%s, %s, %s, %s, %s, %s, %s, %s) on duplicate key update "
+                 "price=%s, address=%s, area=%s, arch=%s, title=%s, district=%s, date=%s",
+                 url, int(price), address, int(float(area) * 100), arch, title, district, ts,
+                 int(price), address, int(float(area) * 100), arch, title, district, ts)
 
 def analyse(page):
     m = g_price_pattern.search(page)
@@ -112,10 +112,10 @@ def analyse(page):
     address = m.group(2)
 
     m = g_area_pattern.search(page)
-    if m == None or len(m.group(1)) > g_max_area_length:
+    if m == None or len(m.group(2)) > g_max_area_length:
         print 'No area'
         return None
-    area = m.group(1)
+    area = m.group(2)
 
     m = g_arch_pattern.search(page)
     if m == None or len(m.group(1)) > g_max_arch_length:
@@ -206,7 +206,11 @@ def crawl_web(root):
 #
 #seeds = ['http://beijing.anjuke.com']
 #seeds = ['http://beijing.anjuke.com/rental/']
+
+#seeds = ['http://bj.58.com/zufang/']
 seeds = ['http://bj.ganji.com/fang1/f0/']
+
+#seeds = ['http://bj.ganji.com/fang1/']
 #seeds = ['http://bj.ganji.com/fang1/229161449x.htm']
 for seed in seeds:
     crawl_web(seed)
