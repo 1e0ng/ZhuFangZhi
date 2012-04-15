@@ -28,7 +28,7 @@
                     {% for item in items %}
                     <li>
                     <div class="title">
-                        <a href="#">{{ escape(item.title)[:50] }}</a>
+                        <a href="{{ escape(item.url) }}">{{ escape(item.title)[:50] }}</a>
                     </div>
                     <div class="url">
                         {{ escape(item.url) }}
