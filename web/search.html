@@ -28,7 +28,7 @@
                     {% for item in items %}
                     <li>
                     <div class="title">
-                        <a href="#">{{ escape(item.title)[:60] }}</a>
+                        <a href="#">{{ escape(item.title)[:50] }}</a>
                     </div>
                     <div class="url">
                         {{ escape(item.url) }}
@@ -39,8 +39,8 @@
                         <span class="arch">房型:{{ escape(item.arch) }}</span>
                     </div>
                     <div class="detail2">
-                        <span class="address">地址：{{ escape(item.address) }}</span>
-                        <span class="district">小区：{{ escape(item.district) }}</span>
+                        <span class="address">地址：{{ escape(item.address)[:30] }}</span>
+                        <span class="district">小区：{{ escape(item.district)[:10] }}</span>
                     </div>
                     </li>
                     {% end %}
