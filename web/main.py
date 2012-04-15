@@ -26,9 +26,37 @@ class SearchHandler(tornado.web.RequestHandler):
         q = self.get_argument(name="query", default="")
 
         q = q.lstrip().rstrip().replace("'", "").replace('"', '').replace('#', '').replace('%', '')
+        qs = q.split(' ')
+
         if len(q) > 0:
-            q = '%' + q + '%'
-            items = db.query("select title, url, price, area, arch, address, district from pages where address like %s or district like %s order by date desc limit 20", q, q)
+            if len(qs) == 1:
+                q = '%' + q + '%'
+                items = db.query("select title, url, price, area, arch, address, district "
+                        "from pages where address like %s or district like %s "
+                        "order by date desc limit 20", q, q)
+            else:
+                l = qs[0]
+                r = qs[-1]
+                m1 = ''
+                m2 = ''
+                for i in range(1, len(qs) - 1):
+                    m1 += '%' + qs[i]
+                    m2 += '%' + qs[len(qs) - 1 - i]
+
+                m1 += '%'
+                m2 += '%'
+
+                items = db.query("select title, url, price, area, arch, address, district "
+                        "from pages where (address like %s and district like %s) or "
+                        "(address like %s and district like %s) or "
+                        "address like %s or "
+                        "address like %s"
+                        "order by date desc limit 20",
+                        '%' + l + m1, '%' + r + '%',
+                        '%' + r + m2, '%' + l + '%',
+                        '%' + l + m1 + r + '%',
+                        '%' + r + m2 + l + '%')
+
         else:
             items = []
 
@@ -37,13 +65,6 @@ class SearchHandler(tornado.web.RequestHandler):
         else:
             hit = True
 
-#        items = [{"title":"上海租房网,上海租房信息,上海租房信息, 租房子,搜屋网。",
-#            "url":"http://www.url.com",
-#            "price":"823元/月",
-#            "area":"80平米",
-#            "style":"2室1厅1卫",
-#            "address":"海淀区学院南路东三元胡同",
-#            "district":"屯三里小区"}] * 10
         self.render("search.html", query=self.get_argument("query", default=""), items=items, hit=hit)
         #self.write("Your query is " + self.get_argument("query"))
         
