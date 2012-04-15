@@ -60,7 +60,7 @@
 .url{
     color:#093;
 }
-.url, .price, .area, .style, .address, .district{
+.url, .price, .area, .arch, .address, .district{
     font-size:13px;
     margin-right:20px;
 }

@@ -24,22 +24,30 @@
 
             <div id="result">
                 <ul id="items">
+                    {% if hit %}
                     {% for item in items %}
                     <li>
                     <div class="title">
-                        <a href="#">{{ escape(item['title']) }}</a>
+                        <a href="#">{{ escape(item.title)[:60] }}</a>
                     </div>
                     <div class="url">
-                        {{ escape(item['url']) }}
+                        {{ escape(item.url) }}
                     </div>
                     <div class="detail1">
-                        <span class="price">价格:{{ escape(item['price']) }}</span>
-                        <span class="area">面积:{{ escape(item['area']) }}</span>
-                        <span class="style">房型:{{ escape(item['style']) }}</span>
+                        <span class="price">价格:{{ escape(str(item.price)) }}</span>
+                        <span class="area">面积:{{ escape(str(item.area)) }}</span>
+                        <span class="arch">房型:{{ escape(item.arch) }}</span>
                     </div>
                     <div class="detail2">
-                        <span class="address">地址：{{ escape(item['address']) }}</span>
-                        <span class="district">小区：{{ escape(item['district']) }}</span>
+                        <span class="address">地址：{{ escape(item.address) }}</span>
+                        <span class="district">小区：{{ escape(item.district) }}</span>
+                    </div>
+                    </li>
+                    {% end %}
+                    {% else %}
+                    <li>
+                    <div class="title">
+                        没有搜索到相关结果。（猪房纸目前只支持北京地区的租房信息，请过几天再试。）
                     </div>
                     </li>
                     {% end %}
