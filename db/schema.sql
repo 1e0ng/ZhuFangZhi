@@ -24,25 +24,16 @@ DROP TABLE IF EXISTS `pages`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `pages` (
   `url` varchar(200) NOT NULL DEFAULT '',
-  
   `price` int(10) DEFAULT NULL,
   `address` varchar(100) DEFAULT NULL,
   `area` int(10) DEFAULT NULL,
   `arch` varchar(20) DEFAULT NULL,
   `title` varchar(100) DEFAULT NULL,
   `district` varchar(20) DEFAULT NULL,
+  `date` int(11) DEFAULT NULL,
   PRIMARY KEY (`url`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `pages`
---
-
-LOCK TABLES `pages` WRITE;
-/*!40000 ALTER TABLE `pages` DISABLE KEYS */;
-/*!40000 ALTER TABLE `pages` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `urls`
@@ -56,15 +47,6 @@ CREATE TABLE `urls` (
   PRIMARY KEY (`url`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `urls`
---
-
-LOCK TABLES `urls` WRITE;
-/*!40000 ALTER TABLE `urls` DISABLE KEYS */;
-/*!40000 ALTER TABLE `urls` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -75,4 +57,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2012-04-09 22:40:22
+-- Dump completed on 2012-04-15 16:54:05
