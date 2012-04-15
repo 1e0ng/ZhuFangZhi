@@ -18,7 +18,7 @@ g_price_pattern = re.compile(ur'租\s*金[^：:]*[：:][^\d]*(\d+)(<[^<>]+>)*\s*
 #租金: <span>3200</span> 元/月
 g_area_pattern = re.compile(ur'面积[：:][^\d]*(\d+)\s*(平米|㎡)', re.U | re.I)
 #出租面积：<span class="hs"><strong>15平米
-g_arch_pattern = re.compile(ur'[房户]\s*型[^：:]*[：:][^\d]*(\d[^\s<]+)[<\s]', re.U | re.I)
+g_arch_pattern = re.compile(ur'[房户]\s*型[^：:]*[：:][^\d]*(\d[^\s<]+)[\s<]', re.U | re.I)
 #户 型</span>：<span class="hs"><strong>3室1厅1卫
 g_title_pattern = re.compile(ur'<title>([^<]+)</title>', re.U | re.I)
 
@@ -49,7 +49,8 @@ def is_valid_url(url):
         return False
     else:
         #ans = re.match(ur'http://bj.zufang.sina.com.cn/detail/\d+/?', url) != None
-        ans = re.match(ur'http://bj.ganji.com/fang1/.*', url) != None
+        ans = re.match(ur'http://bj.ganji.com/fang1/\d+x.htm', url) != None or re.match(ur'http://bj.ganji.com/fang1/f\d+/?', url) != None
+
     #print ans
     return ans
 
@@ -205,7 +206,7 @@ def crawl_web(root):
 #
 #seeds = ['http://beijing.anjuke.com']
 #seeds = ['http://beijing.anjuke.com/rental/']
-seeds = ['http://bj.ganji.com/fang1/']
+seeds = ['http://bj.ganji.com/fang1/f0/']
 #seeds = ['http://bj.ganji.com/fang1/229161449x.htm']
 for seed in seeds:
     crawl_web(seed)
