@@ -34,8 +34,8 @@
                         {{ escape(item.url) }}
                     </div>
                     <div class="detail1">
-                        <span class="price">价格:{{ escape(str(item.price)) }}</span>
-                        <span class="area">面积:{{ escape(str(item.area)) }}</span>
+                        <span class="price">价格:{{ escape(str(item.price)) }}元/月</span>
+                        <span class="area">面积:{{ escape("%.2f" % (item.area/100.0)) }}平方米</span>
                         <span class="arch">房型:{{ escape(item.arch) }}</span>
                     </div>
                     <div class="detail2">

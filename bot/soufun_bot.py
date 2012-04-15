@@ -17,7 +17,7 @@ g_charset_pattern = re.compile(r'<meta\s+([^\s]+="[^"]"\s+)*content="[^"]*charse
 
 g_price_pattern = re.compile(ur'租\s*金[^：:]*[：:]\s*(<[^<>]+>\s*)*(\d+)\s*(<[^<>]+>\s*)*元/月', re.U | re.I)
 #租 金：<span class="red20b">6000</span><span class="black">元/月
-g_area_pattern = re.compile(ur'(面积[：:]\s*(<[^<>]+>\s*)*|室\s*|卫\s*|厅\s*)(\d+)\s*(平米|㎡|平方米)', re.U | re.I)
+g_area_pattern = re.compile(ur'(面积[：:]\s*(<[^<>]+>\s*)*|室\s*|卫\s*|厅\s*)([\d\.]+)\s*(平米|㎡|平方米)', re.U | re.I)
 #出租面积：<span class="hs"><strong>15平米
 g_arch_pattern = re.compile(ur'[房户]\s*型[^：:]*[：:]\s*(<[^<>]+>\s*)*(\d[^<\s]+)[<\s]', re.U | re.I)
 #户 型</span>：<span class="hs"><strong>3室1厅1卫
