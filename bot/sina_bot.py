@@ -45,11 +45,12 @@ class ZfzURLopener(urllib.FancyURLopener):
 urllib._urlopener = ZfzURLopener()
 
 def is_valid_url(url):
+    if url.find('#') != -1 or url.find('javascript:') != -1:
+        return False
     if not url.startswith('http'):
         return True
-    #print url
-    ans = re.match(ur'http://bj.zufang.sina.com.cn/detail/\d+', url) != None
-    #http://bj.zufang.sina.com.cn/detail/33539169
+    else:
+        ans = re.match(ur'http://bj.zufang.sina.com.cn/detail/\d+/?', url) != None
     #print ans
     return ans
 
