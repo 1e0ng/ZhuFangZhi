@@ -3,6 +3,7 @@
 
 import re
 import sys
+import time
 import codecs
 import urllib
 import datetime, time
@@ -63,6 +64,7 @@ def get_page(url):
       
     print 'get page:' + url
 
+    time.sleep(0.5)
    
     if not url.startswith('http://'):
         return None
@@ -73,7 +75,7 @@ def get_page(url):
         ans = ans.decode(charset)
     except:
         return None
-
+    
     return ans
 
 def get_all_links(page):

@@ -9,211 +9,212 @@ import datetime, time
 import robotexclusionrulesparser
 from tornado.database import Connection
 
-g_user_agent = 'zfz-bot/1.0'
-
-g_link_pattern = re.compile(r'\s+href="([^\s\'">]+)"[\s>]', re.U | re.I)
-g_charset_pattern = re.compile(r'<meta\s+([^\s]+="[^"]"\s+)*content="[^"]*charset=([^"]+)[\s"]', re.I)
-#<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
-
-g_price_pattern = re.compile(ur'租\s*金[^：:]*[：:][^\d]*(\d+)(<[^<>]+>)*\s*元/月', re.U | re.I)
-#租金: <span>3200</span> 元/月
-g_area_pattern = re.compile(ur'(面积[：:][^\d]*|室\s*|卫\s*|厅\s*)(\d+)\s*(平米|㎡)', re.U | re.I)
-#出租面积：<span class="hs"><strong>15平米
-g_arch_pattern = re.compile(ur'[房户]\s*型[^：:]*[：:][^\d]*(\d[^<\s]+)[<\s]', re.U | re.I)
-#户 型</span>：<span class="hs"><strong>3室1厅1卫
-g_title_pattern = re.compile(ur'<title>([^<]+)</title>', re.U | re.I)
-
-g_address_pattern = re.compile(ur'地\s*址[：:]\s*(<[^<>]+>\s*)*([^<>\s]+)[<\s]', re.U | re.I)
-#地址：</span>北京丰台区西南三环丰益桥西300米</li>
-g_district_pattern = re.compile(ur'小\s*区[：:]\s*(<[^<>]+>\s*)*([^<>\s]+)[<\s]', re.U | re.I)
-#小区：</span><a href="http://bj.esf.sina.com.cn/info/9212" target="_blank" ><strong>丰益花园西区
-g_max_url_length = 200
-
-g_max_price_length = 10
-g_max_area_length = 10
-g_max_arch_length = 20
-g_max_title_length = 100
-g_max_address_length = 100
-g_max_district_length = 20
-
-g_page_limit = 3 
-
-g_db = Connection('127.0.0.1', 'zfz', 'zfz', 'zfz...891')
-
 class ZfzURLopener(urllib.FancyURLopener):
-    version = g_user_agent
+    version = 'zfz-bot/1.0'
 
-urllib._urlopener = ZfzURLopener()
+class Robot:
+    def __init__(self, root, charset):
+        self.root = root
+        self.charset = charset
+        self.user_agent = 'zfz-bot/1.0'
+        self.link_pattern = re.compile(r'\s+href="([^\s\'">]+)"[\s>]', re.U | re.I)
+        self.price_pattern = re.compile(ur'租\s*金[^：:]*[：:]\s*(<[^<>]+>\s*)*(\d+)\s*(<[^<>]+>\s*)*元/月', re.U | re.I)
+        self.area_pattern = re.compile(ur'(面积[：:]\s*(<[^<>]+>\s*)*|室\s*|卫\s*|厅\s*)([\d\.]+)\s*(平米|㎡|平方米)', re.U | re.I)
+        self.arch_pattern = re.compile(ur'[房户]\s*型[^：:]*[：:]\s*(<[^<>]+>\s*)*(\d[^<\s]+)[<\s]', re.U | re.I)
+        self.title_pattern = re.compile(ur'<title>\s*([^<]+[^\s])\s*</title>', re.U | re.I)
+        self.address_pattern = re.compile(ur'地\s*址[：:]\s*(<[^<>]+>\s*)*([^<>\s]+)[<\s]', re.U | re.I)
+        self.district_pattern = re.compile(ur'(小\s*区|楼盘名称)[：:]\s*(<[^<>]+>\s*)*([^<>\s]+)[<\s]', re.U | re.I)
 
-def is_valid_url(url):
-    if url.find('#') != -1 or url.find('javascript:') != -1:
-        return False
-    else:
-        #ans = re.match(ur'http://bj.zufang.sina.com.cn/detail/\d+/?', url) != None
-        ans = re.match(ur'http://bj.58.com/zufang/.*', url) != None
-    #print ans
-    return ans
+        self.max_url_length = 200
+        self.max_price_length = 10
+        self.max_area_length = 10
+        self.max_arch_length = 20
+        self.max_title_length = 100
+        self.max_address_length = 100
+        self.max_district_length = 20
 
-def get_page(url):
-#    global g_page_limit
-#    g_page_limit -= 1
-#    if g_page_limit <= 0:
-#        sys.exit(0)
-      
-    print 'get page:' + url
+        self.db = Connection('127.0.0.1', 'zfz', 'zfz', 'zfz...891')
 
-   
-    if not url.startswith('http://'):
-        return None
+        urllib._urlopener = ZfzURLopener()
 
-    try:
-        ans = urllib.urlopen(url).read()
-        charset = 'utf-8'
-        m = g_charset_pattern.search(ans)
-        if m != None:
-            charset = m.group(2)
+        self.rerp = robotexclusionrulesparser.RobotExclusionRulesParser()
+        self.rerp.user_agent = self.user_agent
+        try:
+            self.rerp.fetch(self.root[:self.root.find('/', 7)]  + "/robots.txt")
+        except:
+            pass
 
-        print charset
-        ans = ans.decode(charset)
-    except:
-        return None
 
-    return ans
+        self.debug = True
 
-def get_all_links(page):
-    return g_link_pattern.findall(page)
+    def is_valid_url(self, url):
+        if len(url) > self.max_url_length:
+            return False
+        if url.find('#') != -1 or url.find('javascript:') != -1 or url.find('file://') != -1:
+            return False
+        else:
+            return True
 
-def add_result_to_db(url, result):
-    print '++++++Adding %s to db.' % url
-    ts = int(time.mktime(datetime.datetime.now().timetuple()))
-    #price, address, area, arch, title, district = result
-    for i in range(len(result)):
-        result[i] = result[i].encode('utf-8')
-        print result[i]
+    def get_all_links(self, page):
+        return self.link_pattern.findall(page)
 
-    title, price, area, arch, address, district = result
+    def get_price(self, page):
+        m = self.price_pattern.search(page)
+        if m == None or len(m.group(2)) > self.max_price_length:
+            return None
+        return m.group(2)
 
-    g_db.execute("insert into pages (url, price, address, area, arch, title, district, date) "
+    def get_address(self, page):
+        m = self.address_pattern.search(page)
+        if m == None or len(m.group(2)) > self.max_address_length:
+            return None
+        return m.group(2)
+
+    def get_area(self, page):
+        m = self.area_pattern.search(page)
+        if m == None or len(m.group(3)) > self.max_area_length:
+            return None
+        return m.group(3)
+
+    def get_arch(self, page):
+        m = self.arch_pattern.search(page)
+        if m == None or len(m.group(2)) > self.max_arch_length:
+            return None
+        return m.group(2)
+
+    def get_title(self, page):
+        m = self.title_pattern.search(page)
+        if m == None or len(m.group(1)) > self.max_title_length:
+            return None
+        return m.group(1)
+
+    def get_district(self, page):
+        m = self.district_pattern.search(page)
+        if m == None or len(m.group(3)) > self.max_district_length:
+            return None
+        return m.group(3)
+
+    def get_date(self, page):
+        ts = str(int(time.mktime(datetime.datetime.now().timetuple())))
+        return ts
+
+    def analyse(self, page):
+        title = self.get_title(page)
+        if title == None:
+            print 'No title'
+            return None
+        price = self.get_price(page)
+        if price == None:
+            print 'No price'
+            return None
+        area = self.get_area(page)
+        if area == None:
+            print 'No area'
+            return None
+        arch = self.get_arch(page)
+        if arch == None:
+            print 'No arch'
+            return None
+        address = self.get_address(page)
+        if address == None:
+            print 'No address'
+            return None
+        district = self.get_district(page)
+        if district == None:
+            print 'No district'
+            return None
+        date = self.get_date(page)
+        if date == None:
+            print 'Noe date'
+            return None
+
+        return [title, price, area, arch, address, district, date]
+
+    def add_page_to_index(self, url, page):
+        print 'Adding %s to index...' % url
+        result = self.analyse(page)
+
+        if result == None:
+            return
+
+        self.add_result_to_db(url, result)
+
+    def add_result_to_db(self, url, result):
+        print '...Adding %s to db...' % url
+        for i in range(len(result)):
+            result[i] = result[i].encode('utf-8')
+            if self.debug:
+                print result[i]
+
+        title, price, area, arch, address, district, date = result
+
+        self.db.execute("insert into pages (url, price, address, area, arch, title, district, date) "
                  "values (%s, %s, %s, %s, %s, %s, %s, %s) on duplicate key update "
                  "price=%s, address=%s, area=%s, arch=%s, title=%s, district=%s, date=%s",
-                 url, int(price), address, int(float(area) * 100), arch, title, district, ts,
-                 int(price), address, int(float(area) * 100), arch, title, district, ts)
+                 url, int(price), address, int(float(area) * 100), arch, title, district, date,
+                 int(price), address, int(float(area) * 100), arch, title, district, date)
 
-def analyse(page):
-    m = g_price_pattern.search(page)
-    if m == None or len(m.group(1)) > g_max_price_length:
-        print 'No price'
-        return None
-    price = m.group(1)
-    
-    m = g_address_pattern.search(page)
-    if m == None or len(m.group(2)) > g_max_address_length:
-        print 'No address'
-        return None
-    address = m.group(2)
+    def get_page(self, url):
+        print 'Getting page %s...' % url
 
-    m = g_area_pattern.search(page)
-    if m == None or len(m.group(2)) > g_max_area_length:
-        print 'No area'
-        return None
-    area = m.group(2)
+        if not url.startswith('http://'):
+            print 'URL format error.'
+            return None
 
-    m = g_arch_pattern.search(page)
-    if m == None or len(m.group(1)) > g_max_arch_length:
-        print 'No arch'
-        return None
-    arch = m.group(1)
+        try:
+            ans = urllib.urlopen(url).read().decode(self.charset)
+        except:
+            print 'URL open error.'
+            return None
 
-    m = g_title_pattern.search(page)
-    if m == None or len(m.group(1)) > g_max_title_length:
-        print 'No title'
-        return None
-    title = m.group(1)
+        return ans
 
-    m = g_district_pattern.search(page)
-    if m == None or len(m.group(2)) > g_max_district_length:
-        print 'No district'
-        return None
-    district = m.group(2)
+    def is_allowed(self, url):
+        return self.rerp.is_allowed('*', url)
 
-    return [title, price, area, arch, address, district]
+    def get_full_url(self, parent, url):
+        if url.startswith('/'):
+            ans = self.root[:self.root.find('/', 7)] + url
+        elif url.startswith('http'):
+            ans = url
+        elif parent.find('/', 7) != -1:
+            ans = parent[:parent.rfind('/')] + '/' + url
+        else:
+            ans = self.root + '/' + url
+        return ans
 
-def add_page_to_index(url, page):
-    print 'Adding %s to index.' % url
-    result = analyse(page)
-    
-    if result == None:
-        return
+    def crawl_web(self):
+        tocrawl = set([self.root])
+        crawled = set()
 
-    add_result_to_db(url, result)
-
-
-def crawl_web(root):
-    rerp = robotexclusionrulesparser.RobotExclusionRulesParser()
-    rerp.user_agent = g_user_agent
-    try:
-        rerp.fetch(root + "/robots.txt")
-    except:
-        pass
-
-    tocrawl = set([root])
-    crawled = set()
-
-    while len(tocrawl) > 0:
-        url = tocrawl.pop()
-        print "Testing if this is allowed:" + url
-        if not rerp.is_allowed('*', url):
-            continue
-
-        crawled.add(url)
-        page = get_page(url)
-        if page == None:
-            continue
-
-        links = get_all_links(page)
-        #print links
-        for link in links:
-            #Only search insite page in this version
-            #if link.startswith('http') and not link.startswith(root):
-            #    continue
-
-            #Deal with absolute path and relative path
-            if link.startswith('/'):
-                full_link = root[:root.find('/', 7)] + link
-            elif link.startswith('http'):
-                full_link = link
-            elif url.rfind('/') != -1:
-                full_link = url[:url.rfind('/')] + '/' + link
-            else:
-                full_link = root + '/' + link
-
-            #Replace special characters
-            #full_link = urllib.quote(full_link)
-
-            if len(full_link) > g_max_url_length:
+        while len(tocrawl) > 0:
+            url = tocrawl.pop()
+            if not self.is_allowed(url):
+                print 'URL %s is not allowed.' % url
                 continue
 
-            if full_link not in crawled:
-                if is_valid_url(full_link):
+            crawled.add(url)
+            page = self.get_page(url)
+            if page == None:
+                continue
+
+            links = self.get_all_links(page)
+
+            for link in links:
+                full_link = self.get_full_url(url, link)
+                if self.is_valid_url(full_link) and full_link not in crawled:
                     tocrawl.add(full_link)
 
-        add_page_to_index(url, page)
+            self.add_page_to_index(url, page)
+            time.sleep(0.5)
 
-#seeds = ['http://beijing.anjuke.com',
-#        'http://zufang.sina.com.cn',
-#        'http://bj.ganji.com',
-#        'http://bj.58.com/zufang/',
-#        'http://haozu.com']
-#
-#seeds = ['http://beijing.anjuke.com']
-#seeds = ['http://beijing.anjuke.com/rental/']
+class Robot58(Robot):
+    def __init__(self, root, charset):
+        Robot.__init__(self, root, charset)
+        self.url_pattern = re.compile(ur'http://bj.58.com/zufang/.*', re.U | re.I)
 
-seeds = ['http://bj.58.com/zufang/']
+    def is_valid_url(self, url):
+        return Robot.is_valid_url(self, url) and self.url_pattern.match(url) != None
 
-#seeds = ['http://bj.ganji.com/fang1/']
-#seeds = ['http://bj.ganji.com/fang1/229161449x.htm']
-for seed in seeds:
-    crawl_web(seed)
-
-
-g_db.close()
+a = Robot58('http://bj.58.com/zufang/', 'utf-8')
+a.crawl_web()
