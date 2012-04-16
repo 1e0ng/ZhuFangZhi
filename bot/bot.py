@@ -148,6 +148,18 @@ class Robot:
 
         title, price, area, arch, address, district, date = result
 
+        dups = self.db.query("select * from pages where url=%s limit 1", url)
+        if len(dups) == 1:
+            dup = dups[0]
+            print dup.title, dup.price, dup.area
+            print dup.arch, dup.address, dup.district, dup.date
+            
+            if int(price) == dup.price and int(float(area) * 100) == dup.area:
+                print 'Info already in database.'
+                return
+
+        print 'Insert into database...'
+
         self.db.execute("insert into pages (url, price, address, area, arch, title, district, date) "
                  "values (%s, %s, %s, %s, %s, %s, %s, %s) on duplicate key update "
                  "price=%s, address=%s, area=%s, arch=%s, title=%s, district=%s, date=%s",
@@ -208,13 +220,13 @@ class Robot:
             self.add_page_to_index(url, page)
             time.sleep(0.5)
 
-class Robot58(Robot):
-    def __init__(self, root, charset):
-        Robot.__init__(self, root, charset)
-        self.url_pattern = re.compile(ur'http://bj.58.com/zufang/.*', re.U | re.I)
-
-    def is_valid_url(self, url):
-        return Robot.is_valid_url(self, url) and self.url_pattern.match(url) != None
-
-a = Robot58('http://bj.58.com/zufang/', 'utf-8')
-a.crawl_web()
+#class Robot58(Robot):
+#    def __init__(self, root, charset):
+#        Robot.__init__(self, root, charset)
+#        self.url_pattern = re.compile(ur'http://bj.58.com/zufang/.*', re.U | re.I)
+#
+#    def is_valid_url(self, url):
+#        return Robot.is_valid_url(self, url) and self.url_pattern.match(url) != None
+#
+#a = Robot58('http://bj.58.com/zufang/', 'utf-8')
+#a.crawl_web()
