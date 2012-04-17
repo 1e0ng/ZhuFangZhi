@@ -148,13 +148,20 @@ class Robot:
 
         title, price, area, arch, address, district, date = result
 
+        try:
+            price = int(price)
+            area = int(float(area) * 100)
+        except:
+            print 'price or area may not be a number.'
+            return
+
         dups = self.db.query("select * from pages where url=%s limit 1", url)
         if len(dups) == 1:
             dup = dups[0]
             print dup.title, dup.price, dup.area
             print dup.arch, dup.address, dup.district, dup.date
             
-            if int(price) == dup.price and int(float(area) * 100) == dup.area:
+            if price == dup.price and area == dup.area:
                 print 'Info already in database.'
                 return
 
@@ -163,8 +170,8 @@ class Robot:
         self.db.execute("insert into pages (url, price, address, area, arch, title, district, date) "
                  "values (%s, %s, %s, %s, %s, %s, %s, %s) on duplicate key update "
                  "price=%s, address=%s, area=%s, arch=%s, title=%s, district=%s, date=%s",
-                 url, int(price), address, int(float(area) * 100), arch, title, district, date,
-                 int(price), address, int(float(area) * 100), arch, title, district, date)
+                 url, price, address, area, arch, title, district, date,
+                 price, address, area, arch, title, district, date)
 
     def get_page(self, url):
         print 'Getting page %s...' % url
