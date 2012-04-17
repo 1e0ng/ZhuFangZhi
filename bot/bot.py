@@ -18,12 +18,12 @@ class Robot:
         self.charset = charset
         self.user_agent = 'zfz-bot/1.0'
         self.link_pattern = re.compile(r'\s+href="([^\s\'">]+)"[\s>]', re.U | re.I)
-        self.price_pattern = re.compile(ur'租\s*金[^：:]*[：:]\s*(<[^<>]+>\s*)*(\d+)\s*(<[^<>]+>\s*)*元/月', re.U | re.I)
-        self.area_pattern = re.compile(ur'(面积[：:]\s*(<[^<>]+>\s*)*|室\s*|卫\s*|厅\s*)([\d\.]+)\s*(平米|㎡|平方米)', re.U | re.I)
-        self.arch_pattern = re.compile(ur'[房户]\s*型[^：:]*[：:]\s*(<[^<>]+>\s*)*(\d[^<\s]+)[<\s]', re.U | re.I)
+        self.price_pattern = re.compile(ur'租(\s|&nbsp;)*金[^：:]*[：:]\s*(<[^<>]+>\s*)*(\d+)\s*(<[^<>]+>\s*)*元/月', re.U | re.I)
+        self.area_pattern = re.compile(ur'(面(\s|&nbsp;)*积[：:]\s*(<[^<>]+>\s*)*|室\s*|卫\s*|厅\s*)([\d\.]+)\s*(平米|㎡|平方米)', re.U | re.I)
+        self.arch_pattern = re.compile(ur'[房户](\s|&nbsp;)*型[^：:]*[：:]\s*(<[^<>]+>\s*)*(\d[^<\s]+)[<\s]', re.U | re.I)
         self.title_pattern = re.compile(ur'<title>\s*([^<]+[^\s])\s*</title>', re.U | re.I)
-        self.address_pattern = re.compile(ur'地\s*址[：:]\s*(<[^<>]+>\s*)*([^<>\s]+)[<\s]', re.U | re.I)
-        self.district_pattern = re.compile(ur'(小\s*区|楼盘名称)[：:]\s*(<[^<>]+>\s*)*([^<>\s]+)[<\s]', re.U | re.I)
+        self.address_pattern = re.compile(ur'地(\s|&nbsp;)*址[：:]\s*(<[^<>]+>\s*)*([^<>\s]+)[<\s]', re.U | re.I)
+        self.district_pattern = re.compile(ur'(小(\s|&nbsp;)*区(名称)?|楼盘名称)[：:]\s*(<[^<>]+>\s*)*([^<>\s]+)[<\s]', re.U | re.I)
 
         self.max_url_length = 200
         self.max_price_length = 10
@@ -44,6 +44,11 @@ class Robot:
         except:
             pass
 
+        self.min_delay_seconds = 1.0
+        self.max_crawl_seconds_per_site = 2 * 24 * 3600 # 2 days
+
+        self.max_allowed_urlopen_error = 20
+        self.current_urlopen_error = 0
 
         self.debug = True
 
@@ -60,27 +65,27 @@ class Robot:
 
     def get_price(self, page):
         m = self.price_pattern.search(page)
-        if m == None or len(m.group(2)) > self.max_price_length:
-            return None
-        return m.group(2)
-
-    def get_address(self, page):
-        m = self.address_pattern.search(page)
-        if m == None or len(m.group(2)) > self.max_address_length:
-            return None
-        return m.group(2)
-
-    def get_area(self, page):
-        m = self.area_pattern.search(page)
-        if m == None or len(m.group(3)) > self.max_area_length:
+        if m == None or len(m.group(3)) > self.max_price_length:
             return None
         return m.group(3)
 
+    def get_address(self, page):
+        m = self.address_pattern.search(page)
+        if m == None or len(m.group(3)) > self.max_address_length:
+            return None
+        return m.group(3)
+
+    def get_area(self, page):
+        m = self.area_pattern.search(page)
+        if m == None or len(m.group(4)) > self.max_area_length:
+            return None
+        return m.group(4)
+
     def get_arch(self, page):
         m = self.arch_pattern.search(page)
-        if m == None or len(m.group(2)) > self.max_arch_length:
+        if m == None or len(m.group(3)) > self.max_arch_length:
             return None
-        return m.group(2)
+        return m.group(3)
 
     def get_title(self, page):
         m = self.title_pattern.search(page)
@@ -90,9 +95,9 @@ class Robot:
 
     def get_district(self, page):
         m = self.district_pattern.search(page)
-        if m == None or len(m.group(3)) > self.max_district_length:
+        if m == None or len(m.group(5)) > self.max_district_length:
             return None
-        return m.group(3)
+        return m.group(5)
 
     def get_date(self, page):
         ts = str(int(time.mktime(datetime.datetime.now().timetuple())))
@@ -184,8 +189,10 @@ class Robot:
             ans = urllib.urlopen(url).read().decode(self.charset)
         except:
             print 'URL open error.'
+            self.current_urlopen_error += 1
             return None
 
+        self.current_urlopen_error = 0
         return ans
 
     def is_allowed(self, url):
@@ -193,13 +200,13 @@ class Robot:
 
     def get_full_url(self, parent, url):
         if url.startswith('/'):
-            ans = self.root[:self.root.find('/', 7)] + url
+            ans = parent[:parent.find('/', 7)] + url
         elif url.startswith('http'):
             ans = url
         elif parent.find('/', 7) != -1:
             ans = parent[:parent.rfind('/')] + '/' + url
         else:
-            ans = self.root + '/' + url
+            ans = parent + '/' + url
         return ans
 
     def crawl_web(self):
@@ -225,7 +232,25 @@ class Robot:
                     tocrawl.add(full_link)
 
             self.add_page_to_index(url, page)
-            time.sleep(0.5)
+
+            time.sleep(self.min_delay_seconds)
+            
+            if self.current_urlopen_error > self.max_allowed_urlopen_error:
+                break
+
+            if self.current_urlopen_error > self.max_allowed_urlopen_error / 2:
+                time.sleep(10 * 60) # Wait 10 minites
+                self.min_delay_seconds *= 1.1
+            
+        
+
+    def start(self):
+        while True:
+            print 'BEGIN'
+            self.crawl_web()
+            print 'END'
+            time.sleep(30 * 60) # Wait 30 minites
+
 
 #class Robot58(Robot):
 #    def __init__(self, root, charset):
