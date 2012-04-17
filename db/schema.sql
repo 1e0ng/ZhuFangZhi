@@ -31,7 +31,10 @@ CREATE TABLE `pages` (
   `title` varchar(100) DEFAULT NULL,
   `district` varchar(20) DEFAULT NULL,
   `date` int(11) DEFAULT NULL,
-  PRIMARY KEY (`url`)
+  PRIMARY KEY (`url`),
+  KEY `a` (`address`),
+  KEY `d` (`district`),
+  KEY `t` (`title`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -57,4 +60,4 @@ CREATE TABLE `urls` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2012-04-15 16:54:05
+-- Dump completed on 2012-04-17  9:30:00
