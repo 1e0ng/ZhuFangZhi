@@ -22,7 +22,7 @@ class MainHandler(tornado.web.RequestHandler):
 
 class SearchHandler(tornado.web.RequestHandler):
     def get(self):
-        db = Connection('127.0.0.1', 'zfz', 'zfz', 'zfz...891')
+        db = Connection('127.0.0.1', 'zfz', 'zfz', 'zfz...891', 25200)
         q = self.get_argument(name="query", default="")
 
         q = q.lstrip().rstrip().replace("'", "").replace('"', '').replace('#', '').replace('%', '')
@@ -32,8 +32,8 @@ class SearchHandler(tornado.web.RequestHandler):
             if len(qs) == 1:
                 q = '%' + q + '%'
                 items = db.query("select title, url, price, area, arch, address, district "
-                        "from pages where address like %s or district like %s "
-                        "order by date desc limit 20", q, q)
+                        "from pages where address like %s or district like %s or title like %s "
+                        "order by date desc limit 20", q, q, q)
             else:
                 l = qs[0]
                 r = qs[-1]
@@ -49,14 +49,17 @@ class SearchHandler(tornado.web.RequestHandler):
                 items = db.query("select title, url, price, area, arch, address, district "
                         "from pages where (address like %s and district like %s) or "
                         "(address like %s and district like %s) or "
-                        "address like %s or "
-                        "address like %s"
+                        "(title like %s and address like %s) or "
+                        "(title like %s and address like %s and district like %s) or "
+#                        "title like %s or "
+                        "address like %s "
                         "order by date desc limit 20",
                         '%' + l + m1, '%' + r + '%',
                         '%' + r + m2, '%' + l + '%',
-                        '%' + l + m1 + r + '%',
-                        '%' + r + m2 + l + '%')
-
+                        '%' + l + '%', m1 + r + '%',
+                        '%' + l + '%', m1, '%' + r + '%',
+#                        '%' + l + m1 + r + '%',
+                        '%' + l + m1 + r + '%')
         else:
             items = []
 
