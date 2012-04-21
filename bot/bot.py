@@ -4,13 +4,10 @@
 import re
 import sys
 import codecs
-import urllib
+import urllib, urllib2
 import datetime, time
 import robotexclusionrulesparser
 from tornado.database import Connection
-
-class ZfzURLopener(urllib.FancyURLopener):
-    version = 'zfz-bot/1.0'
 
 class Robot:
     def __init__(self, root, charset):
@@ -34,8 +31,8 @@ class Robot:
         self.max_district_length = 20
 
         self.db = Connection('127.0.0.1', 'zfz', 'zfz', 'zfz...891')
-
-        urllib._urlopener = ZfzURLopener()
+        self.opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(), urllib2.HTTPRedirectHandler())
+        self.opener.addheaders = [('User-agent', self.user_agent)]
 
         self.rerp = robotexclusionrulesparser.RobotExclusionRulesParser()
         self.rerp.user_agent = self.user_agent
@@ -186,7 +183,7 @@ class Robot:
             return None
 
         try:
-            ans = urllib.urlopen(url).read().decode(self.charset)
+            ans = self.opener.open(url).read().decode(self.charset)
         except:
             print 'URL open error.'
             self.current_urlopen_error += 1
