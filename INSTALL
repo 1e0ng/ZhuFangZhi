@@ -1,2 +1,2 @@
-1. install python 2.7, mysql, nginx
-2. pip install tornado, supervisor, robotexclusionrulesparser
+1. install python 2.7, mysql, nginx, libevent
+2. pip install tornado, supervisor, robotexclusionrulesparser, gevent
