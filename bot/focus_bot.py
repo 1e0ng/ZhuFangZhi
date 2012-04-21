@@ -12,5 +12,6 @@ class RobotFocus(Robot):
     def is_valid_url(self, url):
         return Robot.is_valid_url(self, url) and self.url_pattern.match(url) != None
 
-a = RobotFocus('http://bj.esf.focus.cn/zufang/74973220095028808.html', 'gbk')
+
+a = RobotFocus('http://sh.esf.focus.cn/zufang/', 'gbk')
 a.start()

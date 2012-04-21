@@ -199,14 +199,14 @@ class Robot:
         return self.rerp.is_allowed('*', url)
 
     def get_full_url(self, parent, url):
-        if url.startswith('/'):
-            ans = parent[:parent.find('/', 7)] + url
-        elif url.startswith('http'):
+        if parent.find('/', 7) == -1:
+            parent += '/'
+        if url.startswith('http'):
             ans = url
-        elif parent.find('/', 7) != -1:
-            ans = parent[:parent.rfind('/')] + '/' + url
+        elif url.startswith('/'):
+            ans = parent[:parent.find('/', 7)] + url
         else:
-            ans = parent + '/' + url
+            ans = parent[:parent.rfind('/')] + '/' + url
         return ans
 
     def crawl_web(self):
@@ -227,7 +227,9 @@ class Robot:
             links = self.get_all_links(page)
 
             for link in links:
+                #print url, link
                 full_link = self.get_full_url(url, link)
+                #print full_link
                 if self.is_valid_url(full_link) and full_link not in crawled:
                     tocrawl.add(full_link)
 
