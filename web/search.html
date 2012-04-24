@@ -17,8 +17,14 @@
                     <img src="static/icon.png" />
                 </div>
                 <form action="search" method="get">
-                    <input type="text" name="query" value="{{ escape(query) }}" id="query" />
-                    <input value="搜索" type="submit" id="ok" />
+                    <div class="row">
+                        <label for="query">地点：</label>
+                        <input type="text" name="query" value="{{ escape(query) }}" id="query" />
+                        <label for="price">不高于</label>
+                        <input type="text" name="price" value="{{ escape(price) }}" id="price" />
+                        <label>元/月</label>
+                        <input value="搜索" type="submit" id="ok" />
+                    </div>
                 </form>
             </div>
 

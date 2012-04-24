@@ -1,6 +1,7 @@
 #encoding:utf-8
 #Created by Liang Sun in 2012 
 
+import re
 import tornado.ioloop
 from tornado.options import define, options, logging
 import tornado.web
@@ -24,16 +25,22 @@ class SearchHandler(tornado.web.RequestHandler):
     def get(self):
         db = Connection('127.0.0.1', 'zfz', 'zfz', 'zfz...891', 25200)
         q = self.get_argument(name="query", default="")
+        p = self.get_argument(name="price", default="999999999")
+        ma = re.search(r'\d+', p)
+        if ma is None:
+            p = "999999999"
+        else:
+            p = ma.group(0)
 
         q = q.lstrip().rstrip().replace("'", "").replace('"', '').replace('#', '').replace('%', '')
         qs = q.split(' ')
 
         if len(q) > 0:
             if len(qs) == 1:
-                q = '%' + q + '%'
+                m = '%' + q + '%'
                 items = db.query("select title, url, price, area, arch, address, district "
-                        "from pages where address like %s or district like %s or title like %s "
-                        "order by date desc limit 20", q, q, q)
+                        "from pages where price <= %s and (address like %s or district like %s or title like %s) "
+                        "order by date desc limit 20", p, m, m, m)
             else:
                 l = qs[0]
                 r = qs[-1]
@@ -47,13 +54,14 @@ class SearchHandler(tornado.web.RequestHandler):
                 m2 += '%'
 
                 items = db.query("select title, url, price, area, arch, address, district "
-                        "from pages where (address like %s and district like %s) or "
+                        "from pages where price <= %s and ((address like %s and district like %s) or "
                         "(address like %s and district like %s) or "
                         "(title like %s and address like %s) or "
                         "(title like %s and address like %s and district like %s) or "
 #                        "title like %s or "
-                        "address like %s "
+                        "address like %s) "
                         "order by date desc limit 20",
+                        p,
                         '%' + l + m1, '%' + r + '%',
                         '%' + r + m2, '%' + l + '%',
                         '%' + l + '%', m1 + r + '%',
@@ -67,8 +75,11 @@ class SearchHandler(tornado.web.RequestHandler):
             hit = False
         else:
             hit = True
+        
+        if p == "999999999":
+            p = ""
 
-        self.render("search.html", query=self.get_argument("query", default=""), items=items, hit=hit)
+        self.render("search.html", query=q, price=p, items=items, hit=hit)
         #self.write("Your query is " + self.get_argument("query"))
         
 def main():

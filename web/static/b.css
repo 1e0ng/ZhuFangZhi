@@ -25,20 +25,26 @@
     height:82px;
     float:left;
 }
-#query{
+.row{
     margin-top:30px;
-    margin-left:40px;
-    width:420px;
+    padding-left:100px;
+    width:800px;
     height:32px;
+}
+#query{
     padding-left:5px;
-    float:left;
+    height:28px;
+    width:200px;
+}
+#price{
+    height:28px;
+    width:100px;
 }
 #ok{
     margin-top:30px;
     margin-left:20px;
     width:80px;
     height:32px;
-    float:left;
 }
 #result{
     border-top:1px solid #dedede;

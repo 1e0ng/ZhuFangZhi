@@ -17,7 +17,15 @@
             </div>
             <div id="form">
                 <form action="search" method="get">
-                    <input type="text" name="query" id="query" />
+                    <div class="row">
+                        <label class="label" for="query">地点：</label>
+                        <input type="text" name="query" id="query" />
+                    </div>
+                    <div class="row">
+                        <label class="label" for="price">不高于</label>
+                        <input type="text" name="price" id="price" />
+                        <label class="label" >元/月（可不填）</label>
+                    </div>
                     <input value="搜 索" type="submit" id="ok" />
                 </form>
             </div>
