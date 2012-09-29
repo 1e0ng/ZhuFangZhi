@@ -8,11 +8,24 @@
     list-style-type:none;
 }
 #top{
+    top:0px;
+    position:absolute;
+    background-color:#2d2d2d;
     height:30px;
+    width:100%;
+}
+#top a{
+    line-height:30px;
+    color:white;
+    text-decoration:none;
+    font-size:14px;
+}
+#top li{
+    margin:0 20px;
 }
 #main{
     width:800px;
-    margin-top:60px;
+    margin-top:12%;
     margin-left:auto;
     margin-right:auto;
 }
@@ -58,4 +71,10 @@
 }
 #bottom{
     height:100px;
+}
+.left{
+    float:left;
+}
+.clear{
+    clear:both;
 }
