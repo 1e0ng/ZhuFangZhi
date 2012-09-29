@@ -29,11 +29,23 @@
     margin-left:auto;
     margin-right:auto;
 }
+#main-s{
+    width:800px;
+    margin-top:45px;
+    margin-left:auto;
+    margin-right:auto;
+}
+
 #logo{
     width:320px;
     height:160px;
     margin-left:auto;
     margin-right:auto;
+}
+#logo-s{
+    width:80px;
+    height:82px;
+    float:left;
 }
 #form{
     width:520px;
@@ -43,6 +55,12 @@
 .row{
     height:60px;
 }
+.row-s{
+    margin-top:30px;
+    padding-left:100px;
+    width:800px;
+    height:32px;
+}
 .label{
     width:100px;
 }
@@ -51,6 +69,12 @@
     padding-left:5px;
     height:30px;
 }
+#query-s{
+    padding-left:5px;
+    height:28px;
+    width:200px;
+}
+
 #adv{
     display:none;
 }
@@ -59,6 +83,11 @@
     padding-left:5px;
     height:30px;
 }
+#price-s{
+    height:28px;
+    width:100px;
+}
+
 #ok{
     width:120px;
     height:32px;
@@ -69,6 +98,35 @@
     padding-right:20px;
     */
 }
+#ok-s{
+    margin-top:30px;
+    margin-left:20px;
+    width:80px;
+    height:32px;
+}
+#result{
+    border-top:1px solid #dedede;
+    margin-top:20px;
+    padding-top:10px;
+    width:800px;
+}
+#items li{
+    width:800px;
+    height:77px;
+    margin-top:20px;
+}
+.title a{
+    text-decoration:underline;
+    font-size:16px;
+}
+.url{
+    color:#093;
+}
+.url, .price, .area, .arch, .address, .district{
+    font-size:13px;
+    margin-right:20px;
+}
+
 #bottom{
     height:100px;
 }

@@ -5,7 +5,7 @@
         <meta name="author" content="Liang Sun : i@liangsun.org">
         <meta name="keywords" content="竹方知,房屋租赁搜索引擎,租房子">
         <meta name="description" content="竹方知,房屋租赁搜索引擎">
-        <link rel="stylesheet" type="text/css" href="static/b.css">
+        <link rel="stylesheet" type="text/css" href="static/a.css">
         <title>竹方知 - 房屋租赁搜索引擎</title>
         <script type="text/javascript">
 
@@ -37,23 +37,25 @@
                 </li>
             </ul>
         </div>
-        <div id="main">
+        <div id="main-s">
             <div id="bar">
-                <div id="logo">
+                <div id="logo-s">
                     <a href="http://zhufangzhi.com">
                         <img src="static/icon.png" />
                     </a>
                 </div>
                 <form action="search" method="get">
-                    <div class="row">
+                    <div class="row-s">
                         <label for="query">地点：</label>
-                        <input type="text" name="query" value="{{ escape(query) }}" id="query" />
+                        <input type="text" name="query" value="{{ escape(query) }}" id="query-s" />
                         <label for="price">不高于</label>
-                        <input type="text" name="price" value="{{ escape(price) }}" id="price" />
+                        <input type="text" name="price" value="{{ escape(price) }}" id="price-s" />
                         <label>元/月</label>
-                        <input value="搜索" type="submit" id="ok" />
+                        <input value="搜索" type="submit" id="ok-s" />
                     </div>
                 </form>
+                <div class="clear">
+                </div>
             </div>
 
             <div id="result">
