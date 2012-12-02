@@ -41,7 +41,7 @@ class Robot:
         except:
             pass
 
-        self.min_delay_seconds = 2.0
+        self.min_delay_seconds = 120.0
         self.max_crawl_seconds_per_site = 2 * 24 * 3600 # 2 days
 
         self.max_allowed_urlopen_error = 20

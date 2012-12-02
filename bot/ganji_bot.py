@@ -24,5 +24,6 @@ class RobotGanji(Robot):
         return ans
 
 
-a = RobotGanji('http://www.ganji.com/index.htm', 'utf-8')
+#a = RobotGanji('http://www.ganji.com/index.htm', 'utf-8')
+a = RobotGanji('http://gxyulin.ganji.com/fang1/', 'utf-8')
 a.start()

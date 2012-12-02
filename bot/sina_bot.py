@@ -11,5 +11,5 @@ class RobotSina(Robot):
     def is_valid_url(self, url):
         return Robot.is_valid_url(self, url) and self.url_pattern.match(url) != None
 
-a = RobotSina('http://bj.zufang.sina.com.cn/house/', 'gbk')
+a = RobotSina('http://bj.zufang.sina.com.cn/house/v0/', 'gbk')
 a.start()

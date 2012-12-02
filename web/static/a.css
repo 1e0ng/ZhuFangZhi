@@ -14,6 +14,10 @@
     height:30px;
     width:100%;
 }
+#top>ul{
+    width:960px;
+    margin:0 auto;
+}
 #top a{
     line-height:30px;
     color:white;
@@ -48,7 +52,7 @@
     float:left;
 }
 #form{
-    width:520px;
+    width:480px;
     margin-left:auto;
     margin-right:auto;
 }
@@ -89,11 +93,11 @@
 }
 
 #ok{
-    width:120px;
-    height:32px;
+    width:80px;
     margin-left:auto;
     margin-right:auto;
     margin-top:10px;
+    display:block;
     /*padding-left:20px;
     padding-right:20px;
     */
