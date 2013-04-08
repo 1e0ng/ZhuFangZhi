@@ -1,0 +1,9 @@
+MySQL-python==1.2.4
+gevent==0.13.8
+greenlet==0.4.0
+meld3==0.6.10
+robotexclusionrulesparser==1.6.1
+supervisor==3.0b1
+tornado==3.0
+torndb==0.1
+wsgiref==0.1.2

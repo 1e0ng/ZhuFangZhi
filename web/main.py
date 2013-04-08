@@ -3,9 +3,10 @@
 
 import re
 import tornado.ioloop
-from tornado.options import define, options, logging
+import logging
+from tornado.options import define, options
 import tornado.web
-from tornado.database import Connection
+from torndb import Connection
 
 define("port", default=8888, help="run on the given port", type=int)
 
