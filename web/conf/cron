@@ -1,0 +1,1 @@
+@reboot /home/sunliang/zhufangzhi-env/bin/supervisord -c /home/sunliang/ZhuFangZhi/web/conf/supervisord.conf
